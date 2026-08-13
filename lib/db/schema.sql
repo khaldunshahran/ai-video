@@ -14,9 +14,11 @@ create table jobs (
   type text not null check (type in ('ingest', 'transcribe_chunk', 'analyze')),
   status text not null check (status in ('queued', 'running', 'done', 'failed')) default 'queued',
   attempts integer not null default 0,
+  payload jsonb not null default '{}'::jsonb,
   error text,
   started_at timestamptz,
-  completed_at timestamptz
+  completed_at timestamptz,
+  created_at timestamptz not null default now()
 );
 
 create table transcript_segments (

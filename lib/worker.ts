@@ -1,4 +1,13 @@
 import { supabase } from "./db/client";
+import type { Database, Json } from "./db/types";
+
+type Job = Database["public"]["Tables"]["jobs"]["Row"];
+
+interface TranscribeChunkPayload {
+  filePath: string;
+  chunkIndex: number;
+  offsetSeconds: number;
+}
 
 async function runWorker() {
   console.log("Background worker started. Polling for jobs...");
@@ -10,7 +19,7 @@ async function runWorker() {
         .from("jobs")
         .select("*")
         .eq("status", "queued")
-        .order("created_at", { ascending: true }) // we don't have created_at on jobs, let's use id or just order by nothing. wait, schema.sql has no created_at on jobs. Let's not order.
+        .order("created_at", { ascending: true })
         .limit(1)
         .single();
 
@@ -38,13 +47,13 @@ async function runWorker() {
           // Mark as done
           await supabase.from("jobs").update({ status: "done", completed_at: new Date().toISOString() }).eq("id", job.id);
           console.log(`Job ${job.id} completed successfully.`);
-        } catch (jobError: any) {
+        } catch (jobError) {
           console.error(`Job ${job.id} failed:`, jobError);
           const attempts = job.attempts + 1;
           const status = attempts >= 3 ? "failed" : "queued";
           await supabase.from("jobs").update({ 
             status, 
-            error: jobError.message || String(jobError),
+            error: jobError instanceof Error ? jobError.message : String(jobError),
             attempts 
           }).eq("id", job.id);
         }
@@ -58,7 +67,7 @@ async function runWorker() {
   }
 }
 
-async function processIngestJob(job: any) {
+async function processIngestJob(job: Job) {
   // Extract audio using yt-dlp
   const { YtDlpAudioProvider } = await import("./audio/ytdlp-provider");
   const provider = new YtDlpAudioProvider();
@@ -80,22 +89,18 @@ async function processIngestJob(job: any) {
       project_id: job.project_id,
       type: "transcribe_chunk",
       status: "queued",
-      // We pass chunk metadata in the error field for now since we don't have a payload column, 
-      // or better: we just use a structured format in a separate table/column.
-      // Wait, we can't alter schema here easily without a migration. Let's stash chunk payload in error field as JSON temporarily
-      // NO, let's just add a payload column to the jobs table, or use a temporary local file. 
-      // Actually, since we need to pass filePath, chunkIndex, offsetSeconds to the transcribe job,
-      // and jobs table doesn't have a payload JSON column, let's just write to a temporary file in /tmp
-      // Wait, we can't do that. Let's parse error field as JSON.
-      error: JSON.stringify({ filePath: chunk.filePath, chunkIndex: chunk.chunkIndex, offsetSeconds: chunk.offsetSeconds })
+      payload: {
+        filePath: chunk.filePath,
+        chunkIndex: chunk.chunkIndex,
+        offsetSeconds: chunk.offsetSeconds,
+      },
     });
   }
 }
 
-async function processTranscribeJob(job: any) {
+async function processTranscribeJob(job: Job) {
   const { transcribeAudioChunk } = await import("./pipeline/whisper");
-  const payload = JSON.parse(job.error || "{}");
-  if (!payload.filePath) throw new Error("Missing filePath in transcribe job payload");
+  const payload = parseTranscribeChunkPayload(job.payload);
 
   const segments = await transcribeAudioChunk(payload.filePath);
 
@@ -113,8 +118,8 @@ async function processTranscribeJob(job: any) {
     await supabase.from("transcript_segments").insert(mappedSegments);
   }
 
-  // Clear the payload from the error field
-  await supabase.from("jobs").update({ error: null }).eq("id", job.id);
+  // Clear the chunk payload now that the source file has been transcribed.
+  await supabase.from("jobs").update({ payload: {} }).eq("id", job.id);
 
   // Check if this was the last transcribe job for the project
   const { count } = await supabase.from("jobs")
@@ -134,7 +139,7 @@ async function processTranscribeJob(job: any) {
   }
 }
 
-async function processAnalyzeJob(job: any) {
+async function processAnalyzeJob(job: Job) {
   const { chunkTranscriptForLLM, analyzeTranscriptWindow } = await import("./pipeline/claude");
   const { snapCandidateToTranscript } = await import("./pipeline/moments");
 
@@ -178,6 +183,30 @@ async function processAnalyzeJob(job: any) {
   }
 
   await supabase.from("projects").update({ status: "ready" }).eq("id", job.project_id);
+}
+
+function parseTranscribeChunkPayload(payload: Json): TranscribeChunkPayload {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Missing transcribe job payload");
+  }
+
+  const filePath = payload.filePath;
+  const chunkIndex = payload.chunkIndex;
+  const offsetSeconds = payload.offsetSeconds;
+
+  if (typeof filePath !== "string" || filePath.length === 0) {
+    throw new Error("Missing filePath in transcribe job payload");
+  }
+
+  if (typeof chunkIndex !== "number" || !Number.isInteger(chunkIndex) || chunkIndex < 0) {
+    throw new Error("Invalid chunkIndex in transcribe job payload");
+  }
+
+  if (typeof offsetSeconds !== "number" || offsetSeconds < 0) {
+    throw new Error("Invalid offsetSeconds in transcribe job payload");
+  }
+
+  return { filePath, chunkIndex, offsetSeconds };
 }
 
 // Ensure the process stays running and handles exits gracefully
