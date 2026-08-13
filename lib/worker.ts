@@ -140,7 +140,7 @@ async function processTranscribeJob(job: Job) {
 }
 
 async function processAnalyzeJob(job: Job) {
-  const { chunkTranscriptForLLM, analyzeTranscriptWindow } = await import("./pipeline/claude");
+  const { chunkTranscriptForLLM, analyzeTranscriptWindow } = await import("./pipeline/llm");
   const { snapCandidateToTranscript } = await import("./pipeline/moments");
 
   const { data: dbSegments } = await supabase.from("transcript_segments")

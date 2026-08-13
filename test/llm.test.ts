@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chunkTranscriptForLLM } from "@/lib/pipeline/claude";
+import { chunkTranscriptForLLM } from "@/lib/pipeline/llm";
 import type { TranscriptSegment } from "@/lib/types";
 
 describe("chunkTranscriptForLLM", () => {
