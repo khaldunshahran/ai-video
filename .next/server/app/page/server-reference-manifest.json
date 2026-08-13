@@ -1,0 +1,16 @@
+{
+  "node": {
+    "40edfed7886765dee5d4d89bc2be6863a97910a1bb": {
+      "workers": {
+        "app/page": {
+          "moduleId": 57526,
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "exportedName": "createProject",
+      "filename": "app/actions.ts"
+    }
+  },
+  "edge": {}
+}
