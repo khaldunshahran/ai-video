@@ -1,9 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import type { TranscriptSegment } from "@/lib/types";
 import { type RawCandidateMoment } from "./moments";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || "dummy_key",
 });
 
 export interface TranscriptWindow {
@@ -60,8 +60,8 @@ Criteria for a good moment:
 Transcript window:
 ${window.text}
 
-Return your response strictly as a JSON array of objects. Do not wrap it in markdown blockquotes or add any other text.
-Each object must have:
+Return your response strictly as a JSON object containing a "moments" array. Do not wrap it in markdown blockquotes or add any other text.
+Each object in the array must have:
 - "startSeconds": number (the exact start time in seconds from the transcript)
 - "endSeconds": number (the exact end time in seconds)
 - "score": number (1-10)
@@ -69,27 +69,26 @@ Each object must have:
 - "tag": string (e.g., "insight", "story", "funny")
 `;
 
-  const response = await anthropic.messages.create({
-    model: "claude-3-5-sonnet-20241022",
-    max_tokens: 1024,
-    temperature: 0.2,
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
     messages: [
       {
         role: "user",
         content: prompt,
       },
     ],
+    temperature: 0.2,
+    response_format: { type: "json_object" } // to use json_object we actually need the prompt to ask for an object. Let's ask for an object containing a 'moments' array.
   });
 
-  const textOutput = response.content[0].type === "text" ? response.content[0].text : "";
+  const textOutput = response.choices[0].message.content || "";
   
   try {
-    // Attempt to parse JSON even if it's wrapped in markdown
-    const jsonStr = textOutput.replace(/```json\n?|\n?```/g, "").trim();
-    const parsed = JSON.parse(jsonStr) as RawCandidateMoment[];
-    return parsed;
+    const parsed = JSON.parse(textOutput);
+    // if we use json_object, we need to handle if it wraps in { moments: [] }
+    return Array.isArray(parsed) ? parsed : (parsed.moments || parsed.candidate_moments || []);
   } catch (err) {
-    console.error("Failed to parse Claude output:", textOutput);
+    console.error("Failed to parse GPT output:", textOutput);
     return [];
   }
 }

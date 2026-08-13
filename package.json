@@ -8,7 +8,6 @@
     "worker": "tsx lib/worker.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.116.0",
     "@supabase/supabase-js": "^2.112.3",
     "next": "latest",
     "openai": "^7.4.0",

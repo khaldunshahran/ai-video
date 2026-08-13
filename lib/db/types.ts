@@ -39,9 +39,11 @@ export interface Database {
           type: "ingest" | "transcribe_chunk" | "analyze";
           status: "queued" | "running" | "done" | "failed";
           attempts: number;
+          payload: Json;
           error: string | null;
           started_at: string | null;
           completed_at: string | null;
+          created_at: string;
         };
         Insert: {
           id?: string;
@@ -49,9 +51,11 @@ export interface Database {
           type: "ingest" | "transcribe_chunk" | "analyze";
           status?: "queued" | "running" | "done" | "failed";
           attempts?: number;
+          payload?: Json;
           error?: string | null;
           started_at?: string | null;
           completed_at?: string | null;
+          created_at?: string;
         };
         Update: {
           id?: string;
@@ -59,9 +63,11 @@ export interface Database {
           type?: "ingest" | "transcribe_chunk" | "analyze";
           status?: "queued" | "running" | "done" | "failed";
           attempts?: number;
+          payload?: Json;
           error?: string | null;
           started_at?: string | null;
           completed_at?: string | null;
+          created_at?: string;
         };
       };
       transcript_segments: {

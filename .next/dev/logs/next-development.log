@@ -1,0 +1,8 @@
+{"timestamp":"00:00:02.595","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:02.596","source":"Server","level":"LOG","message":"✓ Generated AGENTS.md and CLAUDE.md for AI agents. Set `agentRules: false` in next.config to disable."}
+{"timestamp":"00:00:14.964","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:00:54.761","source":"Server","level":"ERROR","message":"⨯ Error: TypeError: fetch failed"}
+{"timestamp":"00:02:28.194","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:02:50.120","source":"Server","level":"ERROR","message":"⨯ Error: TypeError: fetch failed"}
+{"timestamp":"00:05:56.312","source":"Server","level":"LOG","message":"  Reload env: .env"}
+{"timestamp":"00:07:49.576","source":"Server","level":"LOG","message":"  Reload env: .env"}

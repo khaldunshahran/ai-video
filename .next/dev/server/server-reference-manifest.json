@@ -1,0 +1,28 @@
+{
+  "node": {
+    "40fbdd8fa4f4893bfa8b302b0b81704cbbc0079cec": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "filename": "app/actions.ts",
+      "exportedName": "createProject"
+    },
+    "788cf8b6af474e2ad7c47a6b8198a6d8d3c0dcf582": {
+      "workers": {
+        "app/[projectId]/page": {
+          "moduleId": "[project]/.next-internal/server/app/[projectId]/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "filename": "app/actions.ts",
+      "exportedName": "saveDecision"
+    }
+  },
+  "edge": {},
+  "encryptionKey": "Z1Wee2lQQCTMcIQDAStaB4+cD4cbjEe0lFvvxZYJqO8="
+}
