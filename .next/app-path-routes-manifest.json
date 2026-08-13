@@ -1,0 +1,6 @@
+{
+  "/[projectId]/page": "/[projectId]",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/page": "/"
+}

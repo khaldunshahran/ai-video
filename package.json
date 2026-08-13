@@ -3,10 +3,14 @@
     "dev": "next dev",
     "build": "next build",
     "lint": "next lint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "worker": "tsx lib/worker.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.116.0",
+    "@supabase/supabase-js": "^2.112.3",
     "next": "latest",
+    "openai": "^7.4.0",
     "react": "latest",
     "react-dom": "latest",
     "zod": "latest"
@@ -15,9 +19,10 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "typescript": "latest",
-    "vitest": "latest",
     "eslint": "latest",
-    "eslint-config-next": "latest"
+    "eslint-config-next": "latest",
+    "tsx": "^4.23.12",
+    "typescript": "latest",
+    "vitest": "latest"
   }
 }
